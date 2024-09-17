@@ -3,7 +3,7 @@ import 'package:uuid/uuid.dart'; // Import the uuid package
 
 class ProductService {
   final CollectionReference _productsCollection =
-      FirebaseFirestore.instance.collection('Products');
+  FirebaseFirestore.instance.collection('Products');
   final Uuid _uuid = const Uuid();
 
   // Add a new product
@@ -43,8 +43,8 @@ class ProductService {
         .orderBy('created_at', descending: true)
         .snapshots()
         .map((snapshot) => snapshot.docs
-            .map((doc) => doc.data() as Map<String, dynamic>)
-            .toList());
+        .map((doc) => doc.data() as Map<String, dynamic>)
+        .toList());
   }
 
   // Update product status (e.g., mark as sold)
@@ -94,5 +94,35 @@ class ProductService {
         .toList());
   }
 
+  Stream<List<Map<String, dynamic>>> fetchProductsByCategory(String category) {
+    if (category == 'All') {
+      return fetchProducts(); // Return all products if 'All' is selected
+    } else {
+      return _productsCollection
+          .where('category', isEqualTo: category)
+          .snapshots()
+          .map((snapshot) => snapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList());
+    }
+  }
+
+  Stream<List<Map<String, dynamic>>> searchProducts(String query) {
+    return _firestore.collection('Products').snapshots().map((snapshot) {
+      return snapshot.docs
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .where((product) {
+        final name = product['name']?.toLowerCase() ?? '';
+        final description = product['description']?.toLowerCase() ?? '';
+        final price = (product['price'] as num?) ?? 0;
+
+        final queryLower = query.toLowerCase();
+        final priceMatch = price.toString().contains(queryLower);
+
+        return name.contains(queryLower) ||
+            description.contains(queryLower) ||
+            priceMatch;
+      })
+          .toList();
+    });
+  }
 
 }

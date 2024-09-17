@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:quickmartfinal/pages/AddCategory.dart';
 import 'package:quickmartfinal/pages/AddProduct.dart';
 import 'package:quickmartfinal/pages/MyProductspage.dart';
+import 'package:quickmartfinal/pages/WishListPage.dart';
 import 'package:quickmartfinal/pages/product_details_page.dart';
 import 'firebase_options.dart';
 import 'package:quickmartfinal/pages/Register.dart';
@@ -56,7 +57,9 @@ class MyApp extends StatelessWidget {
             return MaterialPageRoute(builder: (context) => const AddProductPage());
           case '/addCategory':
             return MaterialPageRoute(builder: (context) => const AddCategoryPage());
-          case '/myProducts':
+          case '/wishlist':
+            return MaterialPageRoute(builder: (context) => WishlistPage());
+            case '/myProducts':
             return MaterialPageRoute(builder: (context) => const MyProductsPage());
           case '/productDetails':
             final args = settings.arguments as Map<String, dynamic>?;

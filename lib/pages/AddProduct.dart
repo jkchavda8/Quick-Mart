@@ -15,17 +15,15 @@ class AddProductPage extends StatefulWidget {
 }
 
 class _AddProductPageState extends State<AddProductPage> {
-  final ProductService _productService = ProductService();
-  final CategoryService _categoryService = CategoryService();
-
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
-  final TextEditingController _categoryController = TextEditingController();
 
   List<Uint8List> _imageBytes = [];
   String? _selectedCategory;
   List<Map<String, dynamic>> _categories = [];
+  final ProductService _productService = ProductService();
+  final CategoryService _categoryService = CategoryService();
 
   // Method to pick multiple images (supports both mobile and web)
   Future<void> _pickImages() async {
@@ -33,7 +31,7 @@ class _AddProductPageState extends State<AddProductPage> {
       type: FileType.custom,
       allowedExtensions: ['jpg', 'png'], // Only allow JPG and PNG files
       withData: true,
-      allowMultiple: true,// Important to get the actual image data
+      allowMultiple: true, // Important to get the actual image data
     );
 
     if (result != null && result.files.isNotEmpty) {
@@ -55,7 +53,10 @@ class _AddProductPageState extends State<AddProductPage> {
       Reference ref = FirebaseStorage.instance.ref().child('products').child(fileName);
 
       // Upload the file with MIME type 'image/jpeg' or 'image/png'
-      UploadTask uploadTask = ref.putData(image, SettableMetadata(contentType: 'image/jpeg'));
+      UploadTask uploadTask = ref.putData(
+        image,
+        SettableMetadata(contentType: 'image/jpeg'), // Adjust MIME type based on file extension
+      );
       TaskSnapshot snapshot = await uploadTask;
 
       String downloadUrl = await snapshot.ref.getDownloadURL();
@@ -64,6 +65,7 @@ class _AddProductPageState extends State<AddProductPage> {
     return downloadUrls;
   }
 
+  // Method to fetch categories
   void _fetchCategories() {
     _categoryService.fetchCategories().listen((categories) {
       setState(() {
@@ -123,8 +125,9 @@ class _AddProductPageState extends State<AddProductPage> {
   @override
   void initState() {
     super.initState();
-    _fetchCategories();  // Fetch current user when the page is loaded
+    _fetchCategories(); // Fetch categories when the page is loaded
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
