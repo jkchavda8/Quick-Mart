@@ -1,4 +1,8 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:quickmartfinal/components/input_field.dart';
 import 'package:quickmartfinal/components/custom_button.dart';
 import 'package:quickmartfinal/services/UserServices.dart';
@@ -15,17 +19,18 @@ class _RegisterPageState extends State<RegisterPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _phoneNumberController = TextEditingController();
-  final _profilePictureUrlController = TextEditingController();
   final _addressController = TextEditingController();
 
   final UserService _userService = UserService();
+  Uint8List? _selectedImage;
+  final ImagePicker _imagePicker = ImagePicker();
+  String? _profilePictureUrl;
 
   Future<void> _register() async {
     final name = _nameController.text;
     final email = _emailController.text;
     final password = _passwordController.text;
     final phoneNumber = _phoneNumberController.text;
-    final profilePictureUrl = _profilePictureUrlController.text;
     final address = _addressController.text;
 
     if (name.isEmpty || email.isEmpty || password.isEmpty) {
@@ -35,12 +40,17 @@ class _RegisterPageState extends State<RegisterPage> {
       return;
     }
 
+    // If an image is selected, upload it to Firebase
+    if (_selectedImage != null) {
+      _profilePictureUrl = await _uploadImage(_selectedImage!);
+    }
+
     final user = await _userService.registerUser(
       name,
       email,
       password,
       phoneNumber,
-      profilePictureUrl,
+      _profilePictureUrl ?? '', // Use the uploaded URL, or an empty string if no image
       address,
     );
 
@@ -51,6 +61,70 @@ class _RegisterPageState extends State<RegisterPage> {
         const SnackBar(content: Text('Failed to register user')),
       );
     }
+  }
+
+  Future<void> _pickImages() async {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Choose from Gallery'),
+                onTap: () {
+                  _pickImageFromDevice();
+                  Navigator.of(context).pop();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Take from Camera'),
+                onTap: () {
+                  _takeImageFromCamera();
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _pickImageFromDevice() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['jpg', 'png'],
+      withData: true,
+    );
+
+    if (result != null && result.files.isNotEmpty) {
+      setState(() {
+        _selectedImage = result.files.first.bytes;
+      });
+    }
+  }
+
+  Future<void> _takeImageFromCamera() async {
+    final XFile? image = await _imagePicker.pickImage(source: ImageSource.camera);
+    if (image != null) {
+      final Uint8List imageBytes = await image.readAsBytes();
+      setState(() {
+        _selectedImage = imageBytes;
+      });
+    }
+  }
+
+  Future<String> _uploadImage(Uint8List imageBytes) async {
+    String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+    Reference ref = FirebaseStorage.instance.ref().child('profiles').child(fileName);
+
+    UploadTask uploadTask = ref.putData(imageBytes, SettableMetadata(contentType: 'image/jpeg'));
+    TaskSnapshot snapshot = await uploadTask;
+
+    return await snapshot.ref.getDownloadURL();
   }
 
   @override
@@ -101,6 +175,21 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     const SizedBox(height: 40),
 
+                    // Profile Picture Upload
+                    GestureDetector(
+                      onTap: _pickImages,
+                      child: CircleAvatar(
+                        radius: 60,
+                        backgroundImage: _selectedImage != null
+                            ? MemoryImage(_selectedImage!)
+                            : AssetImage('assets/default_profile.png') as ImageProvider,
+                        child: _selectedImage == null
+                            ? Icon(Icons.camera_alt, size: 40, color: Colors.white)
+                            : null,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
                     // Full Name Field
                     InputField(
                       controller: _nameController,
@@ -134,14 +223,6 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Profile Picture URL Field
-                    InputField(
-                      controller: _profilePictureUrlController,
-                      hintText: 'Profile Picture URL',
-                      icon: Icons.link,
-                    ),
-                    const SizedBox(height: 20),
-
                     // Address Field
                     InputField(
                       controller: _addressController,
@@ -150,58 +231,12 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Register Button using MyButton
+                    // Register Button
                     Center(
                       child: MyButton(
                         text: 'Register',
                         onPress: _register,
                       ),
-                    ),
-                    const SizedBox(height: 30),
-
-                    // Or continue with Social Media
-                    Row(
-                      children: const [
-                        Expanded(
-                          child: Divider(
-                            color: Colors.black26,
-                            thickness: 1,
-                          ),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 10),
-                          child: Text('Or continue with'),
-                        ),
-                        Expanded(
-                          child: Divider(
-                            color: Colors.black26,
-                            thickness: 1,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Social Media Icons
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        IconButton(
-                          icon: Image.asset('assets/facebook.png'), // Replace with your FB icon
-                          iconSize: 40,
-                          onPressed: () {},
-                        ),
-                        IconButton(
-                          icon: Image.asset('assets/google.png'), // Replace with your Google icon
-                          iconSize: 40,
-                          onPressed: () {},
-                        ),
-                        IconButton(
-                          icon: Image.asset('assets/apple.png'), // Replace with your Apple icon
-                          iconSize: 40,
-                          onPressed: () {},
-                        ),
-                      ],
                     ),
                     const SizedBox(height: 30),
 

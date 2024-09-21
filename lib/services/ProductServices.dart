@@ -83,15 +83,14 @@ class ProductService {
       return null;
     }
   }
+
   Stream<List<Map<String, dynamic>>> getProductsBySellerId(String sellerId) {
     return _productsCollection
         .where('seller_id', isEqualTo: sellerId)
         .snapshots()
         .map((snapshot) => snapshot.docs
-        .map((doc) => {
-      ...doc.data() as Map<String, dynamic>
-    })
-        .toList());
+            .map((doc) => {...doc.data() as Map<String, dynamic>})
+            .toList());
   }
 
   Stream<List<Map<String, dynamic>>> fetchProductsByCategory(String category) {
@@ -126,3 +125,16 @@ class ProductService {
   }
 
 }
+// Search products by name, description, or category
+//   Stream<List<Map<String, dynamic>>> searchProducts(String searchTerm) {
+//     return _productsCollection
+//         .where('name', isGreaterThanOrEqualTo: searchTerm)
+//         .where('name',
+//             isLessThanOrEqualTo:
+//                 searchTerm + '\uf8ff') // For case-insensitive prefix match
+//         .snapshots()
+//         .map((snapshot) => snapshot.docs
+//             .map((doc) => doc.data() as Map<String, dynamic>)
+//             .toList());
+//   }
+// }

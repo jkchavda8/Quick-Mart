@@ -11,9 +11,9 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   startApp() {
-    Timer(Duration(seconds: 3), () async {
+    Timer(Duration(seconds: 1), () async {
       // Navigate to the login page using named routes
-      Navigator.pushReplacementNamed(context, '/login');
+      Navigator.pushReplacementNamed(context, '/home');
     });
   }
 

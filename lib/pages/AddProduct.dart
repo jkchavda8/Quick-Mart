@@ -1,9 +1,9 @@
 import 'dart:typed_data';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:quickmartfinal/services/ProductServices.dart';
+import 'package:image_picker/image_picker.dart';
+import '../services/ProductServices.dart';
 import '../services/UserSession.dart';
 import '../services/CategoryService.dart';
 
@@ -24,14 +24,46 @@ class _AddProductPageState extends State<AddProductPage> {
   List<Map<String, dynamic>> _categories = [];
   final ProductService _productService = ProductService();
   final CategoryService _categoryService = CategoryService();
+  final ImagePicker _imagePicker = ImagePicker();
 
-  // Method to pick multiple images (supports both mobile and web)
+  // Method to pick image from device or camera
   Future<void> _pickImages() async {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Choose from Gallery'),
+                onTap: () {
+                  _pickImageFromDevice();
+                  Navigator.of(context).pop();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Take from Camera'),
+                onTap: () {
+                  _takeImageFromCamera();
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // Method to pick image from device storage using FilePicker
+  Future<void> _pickImageFromDevice() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['jpg', 'png'], // Only allow JPG and PNG files
+      allowedExtensions: ['jpg', 'png'],
       withData: true,
-      allowMultiple: true, // Important to get the actual image data
+      allowMultiple: true,
     );
 
     if (result != null && result.files.isNotEmpty) {
@@ -45,6 +77,21 @@ class _AddProductPageState extends State<AddProductPage> {
     }
   }
 
+  // Method to take an image from the camera using image_picker
+  Future<void> _takeImageFromCamera() async {
+    final XFile? image = await _imagePicker.pickImage(source: ImageSource.camera);
+    if (image != null) {
+      final Uint8List imageBytes = await image.readAsBytes();
+      setState(() {
+        _imageBytes.add(imageBytes);
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to take a picture.')),
+      );
+    }
+  }
+
   // Method to upload all images and return the download URLs
   Future<List<String>> _uploadImages(List<Uint8List> images) async {
     List<String> downloadUrls = [];
@@ -52,11 +99,7 @@ class _AddProductPageState extends State<AddProductPage> {
       String fileName = DateTime.now().millisecondsSinceEpoch.toString();
       Reference ref = FirebaseStorage.instance.ref().child('products').child(fileName);
 
-      // Upload the file with MIME type 'image/jpeg' or 'image/png'
-      UploadTask uploadTask = ref.putData(
-        image,
-        SettableMetadata(contentType: 'image/jpeg'), // Adjust MIME type based on file extension
-      );
+      UploadTask uploadTask = ref.putData(image, SettableMetadata(contentType: 'image/jpeg'));
       TaskSnapshot snapshot = await uploadTask;
 
       String downloadUrl = await snapshot.ref.getDownloadURL();
@@ -81,27 +124,14 @@ class _AddProductPageState extends State<AddProductPage> {
     final double price = double.tryParse(_priceController.text) ?? 0.0;
     final Map<String, dynamic>? currentUser = UserSession().getCurrentUser();
 
-    // Debugging statements
-    print("Name: $name");
-    print("Description: $description");
-    print("Price: $price");
-    print("Selected Category: $_selectedCategory");
-    print("Current User: $currentUser");
-    print("Images Selected: ${_imageBytes.isNotEmpty}");
-
     if (name.isNotEmpty &&
         description.isNotEmpty &&
         price > 0 &&
         _selectedCategory != null &&
         _imageBytes.isNotEmpty &&
         currentUser != null) {
-      print("Adding product: $name");
-
       // Upload images and get URLs
       List<String> imageUrls = await _uploadImages(_imageBytes);
-
-      // Debugging statements for logging
-      print("Image URLs: $imageUrls");
 
       // Add product with image URLs
       await _productService.addProduct(
@@ -112,7 +142,6 @@ class _AddProductPageState extends State<AddProductPage> {
         imageUrls: imageUrls,
         sellerId: currentUser['user_id'], // Replace with actual seller ID
       ).then((_) {
-        print("Product added successfully");
         Navigator.pushReplacementNamed(context, '/home');
       }).catchError((e) {
         print("Error while adding product: $e");
@@ -125,7 +154,7 @@ class _AddProductPageState extends State<AddProductPage> {
   @override
   void initState() {
     super.initState();
-    _fetchCategories(); // Fetch categories when the page is loaded
+    _fetchCategories();
   }
 
   @override
@@ -153,7 +182,6 @@ class _AddProductPageState extends State<AddProductPage> {
                 keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 20),
-              // Dropdown for selecting category
               DropdownButton<String>(
                 hint: const Text('Select Category'),
                 value: _selectedCategory,
@@ -171,7 +199,7 @@ class _AddProductPageState extends State<AddProductPage> {
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: _pickImages, // Pick images using file picker
+                onPressed: _pickImages,
                 child: const Text('Pick Images'),
               ),
               const SizedBox(height: 10),

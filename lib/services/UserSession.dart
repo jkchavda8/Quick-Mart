@@ -19,4 +19,6 @@ class UserSession {
   void clearUser() {
     currentUser = null;
   }
+
+
 }

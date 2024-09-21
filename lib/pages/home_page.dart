@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:quickmartfinal/components/common/custom_header.dart';
 import 'package:quickmartfinal/services/ProductServices.dart';
-import 'package:quickmartfinal/services/WishListServices.dart'; // Import WishlistService for handling wishlist
+import 'package:quickmartfinal/services/WishListServices.dart';
 import 'package:quickmartfinal/components/common/product_item.dart';
 import 'package:quickmartfinal/services/UserSession.dart';
 import 'package:quickmartfinal/components/common/custom_drawer.dart';
-import 'package:quickmartfinal/services/CategoryService.dart'; // Import CategoryService
+import 'package:quickmartfinal/services/CategoryService.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -17,7 +18,7 @@ class _HomePageState extends State<HomePage> {
   final ProductService _productService = ProductService();
   final WishlistService _wishlistService = WishlistService(); // Create instance of WishlistService
   final CategoryService _categoryService = CategoryService(); // Create instance of CategoryService
-  final Map<String, dynamic>? currentUser = UserSession().getCurrentUser();
+   Map<String, dynamic>? currentUser = UserSession().getCurrentUser();
 
   String _selectedCategory = 'All'; // Default category
   List<String> _categories = ['All']; // Default category list
@@ -31,7 +32,12 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _navigateToAddProductPage() {
-    Navigator.pushNamed(context, '/addProduct'); // Navigate to Add Product page
+    if(currentUser == null){
+      Navigator.pushNamed(context, '/login');
+    }
+    else{
+      Navigator.pushNamed(context, '/addProduct'); // Navigate to Add Product page
+    }
   }
 
   // Function to check if a product is already in the wishlist
@@ -73,27 +79,24 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isLoggedIn = currentUser != null;
+     bool isLoggedIn = currentUser != null;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Home'),
-        actions: [
-          DropdownButton<String>(
-            value: _selectedCategory,
-            items: _categories.map((String value) {
-              return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value),
-              );
-            }).toList(),
-            onChanged: (String? newValue) {
-              setState(() {
-                _selectedCategory = newValue ?? 'All';
-              });
-            },
-          ),
-        ],
+      appBar: CustomHeader(
+        title: 'Home',
+        isLoggedIn: isLoggedIn,
+        onLoginLogoutPressed: () {
+          if(currentUser != null){
+            setState(() {
+              UserSession().clearUser();
+              currentUser = UserSession().getCurrentUser();
+              isLoggedIn = false;
+            });
+          }
+          else{
+            Navigator.pushNamed(context, '/login');
+          }
+        },
       ),
       drawer: CustomDrawer(
         appVersion: '1.0.0',
@@ -104,65 +107,86 @@ class _HomePageState extends State<HomePage> {
         child: const Icon(Icons.add),
         tooltip: 'Add Product',
       ),
-      body: StreamBuilder<List<Map<String, dynamic>>>(
-        stream: _fetchProductsByCategory(_selectedCategory),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: DropdownButton<String>(
+              value: _selectedCategory,
+              items: _categories.map((String category) {
+                return DropdownMenuItem<String>(
+                  value: category,
+                  child: Text(category),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                setState(() {
+                  _selectedCategory = newValue ?? 'All';
+                });
+              },
+            ),
+          ),
+          Expanded(
+            child: StreamBuilder<List<Map<String, dynamic>>>(
+              stream: _fetchProductsByCategory(_selectedCategory),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No products available'));
-          }
+                if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(child: Text('No products available'));
+                }
 
-          final products = snapshot.data!;
+                final products = snapshot.data!;
 
-          return ListView.builder(
-            itemCount: products.length,
-            itemBuilder: (context, index) {
-              final product = products[index];
-              final imageUrl = product['image_urls'] != null && product['image_urls'].isNotEmpty
-                  ? product['image_urls'][0]
-                  : 'https://via.placeholder.com/150'; // Fallback placeholder
+                return ListView.builder(
+                  itemCount: products.length,
+                  itemBuilder: (context, index) {
+                    final product = products[index];
+                    final imageUrl = product['image_urls'] != null && product['image_urls'].isNotEmpty
+                        ? product['image_urls'][0]
+                        : 'https://via.placeholder.com/150'; // Fallback placeholder
 
-              return FutureBuilder<bool>(
-                future: _isProductInWishlist(product['product_id'] ?? ''),
-                builder: (context, snapshot) {
-                  final isLiked = snapshot.data ?? false;
+                    return FutureBuilder<bool>(
+                      future: _isProductInWishlist(product['product_id'] ?? ''),
+                      builder: (context, snapshot) {
+                        final isLiked = snapshot.data ?? false;
 
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Wrap ProductItem inside Expanded to allow space for the icon button
-                      Expanded(
-                        child: ProductItem(
-                          imageUrl: imageUrl,
-                          name: product['name'] ?? 'No name available',
-                          description: product['description'] ?? 'No description available',
-                          price: '\$${product['price']?.toString() ?? '0.00'}',
-                          timeAgo: 'Uploaded at ${product['created_at']?.toDate() ?? 'Unknown time'}',
-                          onTap: () {
-                            _navigateToProductDetailsPage(product['product_id'] ?? '');
-                          },
-                        ),
-                      ),
-                      // Add the heart icon button
-                      IconButton(
-                        icon: Icon(
-                          isLiked ? Icons.favorite : Icons.favorite_border,
-                          color: isLiked ? Colors.red : Colors.grey,
-                        ),
-                        onPressed: () {
-                          _toggleWishlist(product['product_id'] ?? '');
-                        },
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-          );
-        },
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: ProductItem(
+                                imageUrl: imageUrl,
+                                name: product['name'] ?? 'No name available',
+                                description: product['description'] ?? 'No description available',
+                                price: '\₹${product['price']?.toString() ?? '0.00'}',
+                                timeAgo: 'Uploaded at ${product['created_at']?.toDate() ?? 'Unknown time'}',
+                                onTap: () {
+                                  _navigateToProductDetailsPage(product['product_id'] ?? '');
+                                },
+                              ),
+                            ),
+                            IconButton(
+                              icon: Icon(
+                                isLiked ? Icons.favorite : Icons.favorite_border,
+                                color: isLiked ? Colors.red : Colors.grey,
+                              ),
+                              onPressed: () {
+                                _toggleWishlist(product['product_id'] ?? '');
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
