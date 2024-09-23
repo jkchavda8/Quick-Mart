@@ -8,16 +8,6 @@ class CustomSearchDelegate extends SearchDelegate {
 
   CustomSearchDelegate({required this.context});
 
-  final List<String> searchItems = [
-    'Laptop',
-    'Mobile Phone',
-    'Headphones',
-    'Television',
-    'Camera',
-    'Smartwatch',
-    'Tablet',
-  ];
-
   void _navigateToProductDetailsPage(String productId) {
     print('Navigating to product details with productId: $productId');
     Navigator.pushNamed(
@@ -95,21 +85,35 @@ class CustomSearchDelegate extends SearchDelegate {
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    // Display suggestions while typing
-    final List<String> matchQuery = searchItems.where((item) {
-      return item.toLowerCase().contains(query.toLowerCase());
-    }).toList();
+    // Fetch product names asynchronously here
+    return FutureBuilder<List<String>>(
+      future: _productService.fetchProductNames(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error fetching products'));
+        } else if (snapshot.hasData) {
+          final searchItems = snapshot.data!;
+          final filteredItems = searchItems.where((item) {
+            return item.toLowerCase().contains(query.toLowerCase());
+          }).toList();
 
-    return ListView.builder(
-      itemCount: matchQuery.length,
-      itemBuilder: (context, index) {
-        return ListTile(
-          title: Text(matchQuery[index]),
-          onTap: () {
-            query = matchQuery[index]; // Set query and show results
-            showResults(context);
-          },
-        );
+          return ListView.builder(
+            itemCount: filteredItems.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                title: Text(filteredItems[index]),
+                onTap: () {
+                  query = filteredItems[index];
+                  showResults(context);
+                },
+              );
+            },
+          );
+        } else {
+          return Center(child: Text('No products found'));
+        }
       },
     );
   }
