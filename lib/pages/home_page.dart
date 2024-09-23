@@ -6,6 +6,7 @@ import 'package:quickmartfinal/components/common/product_item.dart';
 import 'package:quickmartfinal/services/UserSession.dart';
 import 'package:quickmartfinal/components/common/custom_drawer.dart';
 import 'package:quickmartfinal/services/CategoryService.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -87,6 +88,9 @@ class _HomePageState extends State<HomePage> {
         isLoggedIn: isLoggedIn,
         onLoginLogoutPressed: () {
           if(currentUser != null){
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+            await prefs.clear();
+            
             setState(() {
               UserSession().clearUser();
               currentUser = UserSession().getCurrentUser();
