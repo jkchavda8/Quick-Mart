@@ -124,6 +124,21 @@ class ProductService {
     });
   }
 
+  // Fetch all product names
+  Future<List<String>> fetchProductNames() async {
+    try {
+      QuerySnapshot querySnapshot = await _productsCollection.get();
+      List<String> productNames = querySnapshot.docs.map((doc) {
+        return (doc.data() as Map<String, dynamic>)['name'] as String;
+      }).toList();
+
+      return productNames;
+    } catch (e) {
+      print('Error fetching product names: $e');
+      return [];
+    }
+  }
+
 }
 // Search products by name, description, or category
 //   Stream<List<Map<String, dynamic>>> searchProducts(String searchTerm) {
