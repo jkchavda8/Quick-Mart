@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:quickmartfinal/components/custom_button.dart';
 import 'package:quickmartfinal/components/input_field.dart';
 import 'package:quickmartfinal/services/UserServices.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -23,6 +24,12 @@ class _LoginPageState extends State<LoginPage> {
     try {
       bool success = await _userService.loginUser(email, password);
       if (success) {
+        // for storing in local storage
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('isLoggedIn', true);
+        await prefs.setString('email', email);
+        await prefs.setString('password', password);
+        
         Navigator.pushNamed(context, '/home');
       } else {
         setState(() {
