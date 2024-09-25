@@ -169,7 +169,7 @@ class _HomePageState extends State<HomePage> {
                     crossAxisCount: screenWidth > 600 ? 3 : 2, // Responsive layout
                     crossAxisSpacing: 12.0,
                     mainAxisSpacing: 12.0,
-                    childAspectRatio: 0.95, // Adjust to make images more prominent
+                    childAspectRatio: 0.75, // Adjust to make images more prominent
                   ),
                   itemCount: products.length,
                   itemBuilder: (context, index) {
