@@ -68,7 +68,8 @@ class _AddProductPageState extends State<AddProductPage> {
 
     if (result != null && result.files.isNotEmpty) {
       setState(() {
-        _imageBytes = result.files.map((file) => file.bytes!).toList();
+        // _imageBytes = result.files.map((file) => file.bytes!).toList();
+        _imageBytes.addAll(result.files.map((file) => file.bytes!).toList());
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
