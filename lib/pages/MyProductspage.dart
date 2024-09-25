@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quickmartfinal/services/ProductServices.dart';
-import 'package:quickmartfinal/components/common/product_item.dart';
-import 'package:quickmartfinal/services/UserSession.dart'; // Import UserSession for managing user sessions
+import 'package:quickmartfinal/services/UserSession.dart';
 
 class MyProductsPage extends StatefulWidget {
   const MyProductsPage({Key? key}) : super(key: key);
@@ -32,7 +31,9 @@ class _MyProductsPageState extends State<MyProductsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Products'),
+        title: const Text('My Products', style: TextStyle(color: Colors.white),),
+        centerTitle: true,
+        backgroundColor: Colors.deepPurpleAccent,
       ),
       body: StreamBuilder<List<Map<String, dynamic>>>(
         stream: _productService.getProductsBySellerId(_currentUserId!),
@@ -42,30 +43,70 @@ class _MyProductsPageState extends State<MyProductsPage> {
           }
 
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No products found'));
+            return const Center(child: Text('No products found', style: TextStyle(fontSize: 18, color: Colors.grey)));
           }
 
           final products = snapshot.data!;
 
           return ListView.builder(
+            padding: const EdgeInsets.all(12.0),
             itemCount: products.length,
             itemBuilder: (context, index) {
               final product = products[index];
-              print('hello');
-              print(product['product_id']);
               final imageUrl = product['image_urls'] != null && product['image_urls'].isNotEmpty
                   ? product['image_urls'][0]
                   : 'https://via.placeholder.com/150'; // Fallback placeholder
 
-              return ProductItem(
-                imageUrl: imageUrl,
-                name: product['name'] ?? 'No name available',
-                description: product['description'] ?? 'No description available',
-                price: '\$${product['price']?.toString() ?? '0.00'}',
-                timeAgo: 'Uploaded at ${product['created_at']?.toDate() ?? 'Unknown time'}',
-                onTap: () {
-                  _navigateToProductDetailsPage(product['product_id'] ?? ''); // Pass the product ID
-                },
+              return Card(
+                elevation: 3,
+                margin: const EdgeInsets.symmetric(vertical: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: ListTile(
+                  leading: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      imageUrl,
+                      width: 70,
+                      height: 70,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  title: Text(
+                    product['name'] ?? 'No name available',
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 5),
+                      Text(
+                        product['description'] ?? 'No description available',
+                        style: const TextStyle(fontSize: 14, color: Colors.grey),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '₹${product['price']?.toString() ?? '0.00'}',
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.teal),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        'Uploaded on ${product['created_at']?.toDate()?.toString().split(' ')[0] ?? 'Unknown date'}',
+                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.arrow_forward_ios, color: Colors.teal),
+                    onPressed: () {
+                      _navigateToProductDetailsPage(product['product_id'] ?? ''); // Navigate to product details
+                    },
+                  ),
+                  onTap: () {
+                    _navigateToProductDetailsPage(product['product_id'] ?? ''); // Pass the product ID
+                  },
+                ),
               );
             },
           );

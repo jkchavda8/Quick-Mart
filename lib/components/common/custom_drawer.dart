@@ -25,6 +25,7 @@ class CustomDrawer extends StatelessWidget {
           DrawerHeader(
             decoration: const BoxDecoration(color: Colors.blue),
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 CircleAvatar(
                   radius: 40,
@@ -43,40 +44,57 @@ class CustomDrawer extends StatelessWidget {
               ],
             ),
           ),
+
+          // Menu Items
+
           if (isLoggedIn)
             ListTile(
+              leading: const Icon(Icons.person),
               title: const Text('Profile'),
               onTap: () {
                 Navigator.pushNamed(context, '/profile');
               },
             ),
+
           ListTile(
+            leading: const Icon(Icons.settings),
             title: const Text('Settings'),
             onTap: () {
               Navigator.pushNamed(context, '/settings');
             },
           ),
+
           ListTile(
+            leading: const Icon(Icons.info),
             title: const Text('About Us'),
             onTap: () {
               Navigator.pushNamed(context, '/about');
             },
           ),
-          if (isLoggedIn) // Conditionally add this item if user is logged in
+
+          if (isLoggedIn)
             ListTile(
+              leading: const Icon(Icons.inventory_2),
               title: const Text('My Products'),
               onTap: () {
                 Navigator.pushNamed(context, '/myProducts');
               },
             ),
-          if (isLoggedIn) // Conditionally show the Wishlist if the user is logged in
+
+          if (isLoggedIn)
             ListTile(
-              title: const Text('Wishlist'), // Add Wishlist item here
+              leading: const Icon(Icons.favorite),
+              title: const Text('Wishlist'),
               onTap: () {
-                Navigator.pushNamed(context, '/wishlist'); // Navigate to the Wishlist page
+                Navigator.pushNamed(context, '/wishlist');
               },
             ),
+
+          const Divider(), // A separator line for neatness
+
+          // Displaying App Version
           ListTile(
+            leading: const Icon(Icons.info_outline),
             title: Text('App Version: $appVersion'),
           ),
         ],

@@ -162,65 +162,171 @@ class _AddProductPageState extends State<AddProductPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add Product'),
+        backgroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.close, color: Colors.deepPurpleAccent),
+            onPressed: () {
+              Navigator.pushNamed(context, '/home');
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextField(
-                controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Product Name'),
-              ),
-              TextField(
-                controller: _descriptionController,
-                decoration: const InputDecoration(labelText: 'Description'),
-              ),
-              TextField(
-                controller: _priceController,
-                decoration: const InputDecoration(labelText: 'Price'),
-                keyboardType: TextInputType.number,
+              // Title
+              const Text(
+                'Create New Product',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.deepPurpleAccent,
+                ),
               ),
               const SizedBox(height: 20),
-              DropdownButton<String>(
-                hint: const Text('Select Category'),
-                value: _selectedCategory,
-                onChanged: (String? newValue) {
-                  setState(() {
-                    _selectedCategory = newValue;
-                  });
-                },
-                items: _categories.map((category) {
-                  return DropdownMenuItem<String>(
-                    value: category['name'],
-                    child: Text(category['name']),
-                  );
-                }).toList(),
+
+              // Product details in a card
+              Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      // Product Name Field
+                      TextField(
+                        controller: _nameController,
+                        decoration: InputDecoration(
+                          labelText: 'Product Name',
+                          prefixIcon: const Icon(Icons.shopping_cart),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Description Field
+                      TextField(
+                        controller: _descriptionController,
+                        decoration: InputDecoration(
+                          labelText: 'Description',
+                          prefixIcon: const Icon(Icons.description),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        maxLines: 3,
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Price Field
+                      TextField(
+                        controller: _priceController,
+                        decoration: InputDecoration(
+                          labelText: 'Price',
+                          prefixIcon: const Icon(Icons.currency_rupee),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        keyboardType: TextInputType.number,
+                      ),
+                    ],
+                  ),
+                ),
               ),
+
               const SizedBox(height: 20),
-              ElevatedButton(
+
+              // Category Dropdown
+              Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: DropdownButtonFormField<String>(
+                    decoration: InputDecoration(
+                      labelText: 'Select Category',
+                      prefixIcon: const Icon(Icons.category),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    value: _selectedCategory,
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _selectedCategory = newValue;
+                      });
+                    },
+                    items: _categories.map((category) {
+                      return DropdownMenuItem<String>(
+                        value: category['name'],
+                        child: Text(category['name']),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // Image Picker Button
+              ElevatedButton.icon(
                 onPressed: _pickImages,
-                child: const Text('Pick Images'),
+                icon: const Icon(Icons.image, color: Colors.white,),
+                label: const Text('Pick Images', style: TextStyle(color: Colors.white )),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepPurpleAccent,
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
               ),
+
               const SizedBox(height: 10),
+
+              // Image Previews
               _imageBytes.isNotEmpty
                   ? Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 children: _imageBytes.map((bytes) {
-                  return Image.memory(
-                    bytes,
-                    width: 100,
-                    height: 100,
-                    fit: BoxFit.cover,
+                  return ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.memory(
+                      bytes,
+                      width: 100,
+                      height: 100,
+                      fit: BoxFit.cover,
+                    ),
                   );
                 }).toList(),
               )
-                  : const Text('No images selected'),
+                  : const Text('No images selected', style: TextStyle(color: Colors.grey)),
+
               const SizedBox(height: 20),
+
+              // Submit Button
               ElevatedButton(
                 onPressed: _addProduct,
-                child: const Text('Add Product'),
+                child: const Text('Add Product',style: TextStyle(color: Colors.white )),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepPurpleAccent,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
               ),
             ],
           ),

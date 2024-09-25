@@ -51,7 +51,7 @@ class MyApp extends StatelessWidget {
           case '/settings':
             return MaterialPageRoute(builder: (context) => const SettingsPage());
           case '/about':
-            return MaterialPageRoute(builder: (context) => const AboutUsPage());
+            return MaterialPageRoute(builder: (context) =>   AboutUsPage());
           case '/profile':
             return MaterialPageRoute(builder: (context) => ProfilePage());
           case '/addProduct':

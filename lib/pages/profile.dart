@@ -176,6 +176,14 @@ class _ProfilePageState extends State<ProfilePage> {
               SizedBox(height: 10),
               Center(
                 child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueAccent, // Background color
+                    foregroundColor: Colors.white, // Text color
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30), // Rounded corners
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15), // Button padding
+                  ),
                   onPressed: _pickImages,
                   child: Text('Change Profile Picture'),
                 ),
@@ -185,21 +193,21 @@ class _ProfilePageState extends State<ProfilePage> {
               // Name Field
               TextField(
                 controller: _nameController,
-                decoration: InputDecoration(labelText: 'Name'),
+                decoration: InputDecoration(labelText: 'Name', border: OutlineInputBorder()),
               ),
               SizedBox(height: 10),
 
               // Phone Number Field
               TextField(
                 controller: _phoneController,
-                decoration: InputDecoration(labelText: 'Phone Number'),
+                decoration: InputDecoration(labelText: 'Phone Number', border: OutlineInputBorder()),
               ),
               SizedBox(height: 10),
 
               // Email Field
               TextField(
                 controller: _emailController,
-                decoration: InputDecoration(labelText: 'Email'),
+                decoration: InputDecoration(labelText: 'Email', border: OutlineInputBorder()),
                 readOnly: true,
               ),
               SizedBox(height: 10),
@@ -207,12 +215,20 @@ class _ProfilePageState extends State<ProfilePage> {
               // Address Field
               TextField(
                 controller: _addressController,
-                decoration: InputDecoration(labelText: 'Address'),
+                decoration: InputDecoration(labelText: 'Address', border: OutlineInputBorder()),
               ),
               SizedBox(height: 20),
 
               // Save Button
               ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueAccent, // Background color
+                  foregroundColor: Colors.white, // Text color
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30), // Rounded corners
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15), // Button padding
+                ),
                 onPressed: _updateProfile,
                 child: Text('Save Changes'),
               ),

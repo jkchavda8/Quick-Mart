@@ -12,19 +12,32 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  startApp() {
-    Timer(Duration(seconds: 1), () async {
-      // Navigate to the login page using named routes
+  Future<void> startApp() async {
+    Timer(Duration(seconds: 2), () async {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       bool? isLoggedIn = prefs.getBool('isLoggedIn');
-      if(isLoggedIn!){
+
+      // Check if isLoggedIn is not null
+      if (isLoggedIn != null && isLoggedIn) {
         var email = prefs.getString('email');
         var password = prefs.getString('password');
-        if(email != '' && password != ''){
-          await UserService().loginUser(email!, password!);
+        if (email != null && password != null && email.isNotEmpty && password.isNotEmpty) {
+          try {
+            await UserService().loginUser(email, password);
+            // Navigate to the home page after successful login
+            Navigator.pushReplacementNamed(context, '/home');
+          } catch (e) {
+            // Handle login failure (you can show a dialog or a message)
+            print('Login failed: $e');
+            Navigator.pushReplacementNamed(context, '/login'); // Navigate to login if login fails
+          }
+        } else {
+          Navigator.pushReplacementNamed(context, '/login'); // Navigate to login if email/password is empty
         }
+      } else {
+        // If not logged in, navigate to login page
+        Navigator.pushReplacementNamed(context, '/login');
       }
-      Navigator.pushReplacementNamed(context, '/home');
     });
   }
 
