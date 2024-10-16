@@ -5,6 +5,8 @@ class ProductService {
   final CollectionReference _productsCollection =
   FirebaseFirestore.instance.collection('Products');
   final Uuid _uuid = const Uuid();
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final String productCollection = 'Products';
 
   // Add a new product
   Future<void> addProduct({
@@ -29,6 +31,7 @@ class ProductService {
         'created_at': Timestamp.now(),
         'updated_at': Timestamp.now(),
         'is_sold': false,
+        'isApproved': false
       });
 
       print('Product added to Firestore');
@@ -47,17 +50,88 @@ class ProductService {
         .toList());
   }
 
-  // Update product status (e.g., mark as sold)
+  // Fetch all products (for admin)
+  Stream<List<Map<String, dynamic>>> fetchAllProducts() {
+    return _productsCollection
+        .orderBy('created_at', descending: true)
+        .snapshots()
+        .map((snapshot) =>
+        snapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList());
+  }
+
+  Future<void> approveProduct(String productId) async {
+    try {
+      // Directly update the 'isApproved' field to true
+      await _productsCollection
+          .where('product_id', isEqualTo: productId)
+          .limit(1)
+          .get()
+          .then((snapshot) {
+        if (snapshot.docs.isNotEmpty) {
+          snapshot.docs.first.reference.update({'isApproved': true});
+          print('Product approved: $productId');
+        }
+      });
+    } catch (e) {
+      print('Error approving product: $e');
+    }
+  }
+
+
+  Future<void> blockProduct(String productId) async {
+    try {
+      // Directly update the 'isApproved' field to false
+      await _productsCollection
+          .where('product_id', isEqualTo: productId)
+          .limit(1)
+          .get()
+          .then((snapshot) {
+        if (snapshot.docs.isNotEmpty) {
+          snapshot.docs.first.reference.update({'isApproved': false});
+          print('Product blocked: $productId');
+        }
+      });
+    } catch (e) {
+      print('Error blocking product: $e');
+    }
+  }
+
+  Future<void> unblockProduct(String productId) async {
+    try {
+      // Directly update the 'isApproved' field to true
+      await _productsCollection
+          .where('product_id', isEqualTo: productId)
+          .limit(1)
+          .get()
+          .then((snapshot) {
+        if (snapshot.docs.isNotEmpty) {
+          snapshot.docs.first.reference.update({'isApproved': true});
+          print('Product unblocked: $productId');
+        }
+      });
+    } catch (e) {
+      print('Error unblocking product: $e');
+    }
+  }
+
+
   Future<void> updateProductStatus(String productId, bool isSold) async {
     try {
-      await _productsCollection.doc(productId).update({
-        'is_sold': isSold,
-        'updated_at': Timestamp.now(),
+      _productsCollection
+          .where('product_id', isEqualTo: productId)
+          .limit(1)
+          .get()
+          .then((snapshot) {
+        if (snapshot.docs.isNotEmpty) {
+          snapshot.docs.first.reference.update({'is_sold': isSold});
+          print('Product sold: $productId');
+        }
       });
     } catch (e) {
       print('Error updating product status: $e');
     }
   }
+
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -138,6 +212,26 @@ class ProductService {
       return [];
     }
   }
+  Future<void> deleteProductById(String productId) async {
+    try {
+      // Query to find the document with the given product_id
+      QuerySnapshot snapshot = await _productsCollection
+          .where('product_id', isEqualTo: productId)
+          .limit(1) // Assuming product_id is unique, limit to 1 result
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        // If the document exists, delete it
+        await snapshot.docs.first.reference.delete();
+        print('Product deleted: $productId');
+      } else {
+        print('No product found with ID: $productId');
+      }
+    } catch (e) {
+      print('Error deleting product: $e');
+    }
+  }
+
 
 }
 // Search products by name, description, or category

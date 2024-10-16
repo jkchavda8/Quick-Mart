@@ -161,7 +161,14 @@ class _HomePageState extends State<HomePage> {
                   return const Center(child: Text('No products available'));
                 }
 
-                final products = snapshot.data!;
+                // Filter products to show only approved ones
+                final products = snapshot.data!
+                    .where((product) => product['isApproved'] == true) // Filter only approved products
+                    .toList();
+
+                if (products.isEmpty) {
+                  return const Center(child: Text('No approved products available.'));
+                }
 
                 return GridView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),

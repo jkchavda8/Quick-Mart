@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:quickmartfinal/pages/AddCategory.dart';
 import 'package:quickmartfinal/pages/AddProduct.dart';
+import 'package:quickmartfinal/pages/AdminHomePage.dart';
+import 'package:quickmartfinal/pages/AdminLoginPage.dart';
 import 'package:quickmartfinal/pages/MyProductspage.dart';
 import 'package:quickmartfinal/pages/WishListPage.dart';
 import 'package:quickmartfinal/pages/product_details_page.dart';
@@ -58,6 +60,10 @@ class MyApp extends StatelessWidget {
             return MaterialPageRoute(builder: (context) => const AddProductPage());
           case '/addCategory':
             return MaterialPageRoute(builder: (context) => const AddCategoryPage());
+          case '/adminLogin':
+            return MaterialPageRoute(builder: (_) => AdminLoginPage());
+          case '/adminHome':
+            return MaterialPageRoute(builder: (_) => AdminHomePage());
           case '/wishlist':
             return MaterialPageRoute(builder: (context) => WishlistPage());
             case '/myProducts':

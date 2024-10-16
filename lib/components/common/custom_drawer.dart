@@ -89,6 +89,13 @@ class CustomDrawer extends StatelessWidget {
                 Navigator.pushNamed(context, '/wishlist');
               },
             ),
+          ListTile(
+            leading: const Icon(Icons.admin_panel_settings),
+            title: const Text('Admin Login'),
+            onTap: () {
+              Navigator.pushNamed(context, '/adminLogin');
+            },
+          ),
 
           const Divider(), // A separator line for neatness
 
