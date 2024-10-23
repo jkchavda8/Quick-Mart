@@ -51,10 +51,35 @@ class ProductDetailsPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center, // Center horizontally
                 children: [
                   // Product Image
-                  SizedBox(
-                    height: 200.0, // Fixed height for image
+                  // SizedBox(
+                  //   height: 200.0, // Fixed height for image
+                  //   child: Row(
+                  //     mainAxisAlignment: MainAxisAlignment.center, // Center the images
+                  //     children: List.generate(
+                  //       productData['image_urls'].length,
+                  //           (index) {
+                  //         final imageUrl = productData['image_urls'][index];
+                  //         return Padding(
+                  //           padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  //           child: ClipRRect(
+                  //             borderRadius: BorderRadius.circular(10),
+                  //             child: Image.network(
+                  //               imageUrl,
+                  //               fit: BoxFit.cover,
+                  //               height: 200,
+                  //               width: 200,
+                  //             ),
+                  //           ),
+                  //         );
+                  //       },
+                  //     ),
+                  //   ),
+                  // ),
+              SizedBox(
+                   height: 200.0,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal, // Enable horizontal scrolling
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center, // Center the images
                       children: List.generate(
                         productData['image_urls'].length,
                             (index) {
@@ -75,6 +100,8 @@ class ProductDetailsPage extends StatelessWidget {
                       ),
                     ),
                   ),
+              ),
+
                   const SizedBox(height: 16),
 
                   // Product Title

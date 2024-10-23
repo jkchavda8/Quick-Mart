@@ -204,6 +204,10 @@ class _RegisterPageState extends State<RegisterPage> {
                       hintText: 'user@mail.com',
                       icon: Icons.email,
                     ),
+
+
+
+
                     const SizedBox(height: 20),
 
                     // Password Field
